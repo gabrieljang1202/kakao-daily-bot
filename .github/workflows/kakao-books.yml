@@ -23,4 +23,5 @@ jobs:
         env:
           KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
           KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
+          MY_NAME: ${{ secrets.MY_NAME }}
         run: python books.py
