@@ -6,6 +6,7 @@ from datetime import datetime
 KAKAO_REST_API_KEY = "6e9c0f38c0007caa3874adadf29c6f67"
 KAKAO_CLIENT_SECRET = os.environ["KAKAO_CLIENT_SECRET"]
 KAKAO_REFRESH_TOKEN = os.environ["KAKAO_REFRESH_TOKEN"]
+MY_NAME = os.environ["MY_NAME"]
 
 def refresh_access_token():
     response = requests.post("https://kauth.kakao.com/oauth/token", data={
@@ -54,7 +55,7 @@ if __name__ == "__main__":
     print("뉴스 가져오는 중...")
     news = get_news()
 
-    message = f"📰 {today} 주요 뉴스\n\n{news}"
+    message = f"📰 {MY_NAME}님을 위한 {today} 주요 뉴스\n\n{news}"
     print(f"전송할 메시지:\n{message}")
 
     result = send_kakao_message(access_token, message)
