@@ -21,7 +21,9 @@ def refresh_access_token():
 
 def get_news():
     import feedparser
-    feed = feedparser.parse("https://news.naver.com/main/rss/society.naver")
+    feed = feedparser.parse("https://feeds.bbci.co.uk/korean/rss.xml")
+    if not feed.entries:
+        feed = feedparser.parse("https://www.yonhapnewstv.co.kr/browse/feed/")
     news_list = []
     for entry in feed.entries[:5]:
         title = entry.title.strip()
