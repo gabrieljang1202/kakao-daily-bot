@@ -1,5 +1,4 @@
 import requests
-import xml.etree.ElementTree as ET
 import os
 import json
 from datetime import datetime
@@ -21,17 +20,12 @@ def refresh_access_token():
     return data["access_token"]
 
 def get_news():
-    url = "https://news.naver.com/main/rss/society.naver"
-    headers = {"User-Agent": "Mozilla/5.0"}
-    response = requests.get(url, headers=headers)
-    root = ET.fromstring(response.content)
-
-    items = root.findall(".//item")[:5]
+    import feedparser
+    feed = feedparser.parse("https://news.naver.com/main/rss/society.naver")
     news_list = []
-    for item in items:
-        title = item.findtext("title", "").strip()
+    for entry in feed.entries[:5]:
+        title = entry.title.strip()
         news_list.append(f"• {title}")
-
     return "\n".join(news_list)
 
 def send_kakao_message(access_token, message):
