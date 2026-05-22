@@ -1,26 +1,65 @@
-name: 카카오 뉴스 알림
+import requests
+import xml.etree.ElementTree as ET
+import os
+import json
+from datetime import datetime
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *'  # 매일 오전 9시 (한국시간 = UTC+9)
+KAKAO_REST_API_KEY = "6e9c0f38c0007caa3874adadf29c6f67"
+KAKAO_CLIENT_SECRET = os.environ["KAKAO_CLIENT_SECRET"]
+KAKAO_REFRESH_TOKEN = os.environ["KAKAO_REFRESH_TOKEN"]
 
-jobs:
-  send-news:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+def refresh_access_token():
+    response = requests.post("https://kauth.kakao.com/oauth/token", data={
+        "grant_type": "refresh_token",
+        "client_id": KAKAO_REST_API_KEY,
+        "refresh_token": KAKAO_REFRESH_TOKEN,
+        "client_secret": KAKAO_CLIENT_SECRET
+    })
+    data = response.json()
+    if "access_token" not in data:
+        raise Exception(f"토큰 갱신 실패: {data}")
+    return data["access_token"]
 
-      - name: Python 설치
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
+def get_news():
+    url = "https://news.naver.com/main/rss/society.naver"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    response = requests.get(url, headers=headers)
+    root = ET.fromstring(response.content)
 
-      - name: 라이브러리 설치
-        run: pip install requests
+    items = root.findall(".//item")[:5]
+    news_list = []
+    for item in items:
+        title = item.findtext("title", "").strip()
+        news_list.append(f"• {title}")
 
-      - name: 뉴스 전송
-        env:
-          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
-          KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
-        run: python main.py
+    return "\n".join(news_list)
+
+def send_kakao_message(access_token, message):
+    template = {
+        "object_type": "text",
+        "text": message,
+        "link": {
+            "web_url": "https://news.naver.com",
+            "mobile_web_url": "https://news.naver.com"
+        }
+    }
+    response = requests.post(
+        "https://kapi.kakao.com/v2/api/talk/memo/default/send",
+        headers={"Authorization": f"Bearer {access_token}"},
+        data={"template_object": json.dumps(template)}
+    )
+    return response.json()
+
+if __name__ == "__main__":
+    today = datetime.now().strftime("%Y년 %m월 %d일")
+    print("토큰 갱신 중...")
+    access_token = refresh_access_token()
+
+    print("뉴스 가져오는 중...")
+    news = get_news()
+
+    message = f"📰 {today} 주요 뉴스\n\n{news}"
+    print(f"전송할 메시지:\n{message}")
+
+    result = send_kakao_message(access_token, message)
+    print(f"전송 결과: {result}")
