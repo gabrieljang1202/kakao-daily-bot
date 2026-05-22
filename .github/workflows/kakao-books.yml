@@ -1,0 +1,26 @@
+name: 카카오 도서 추천
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 1 * * *'  # 매일 오전 10시 (한국시간)
+
+jobs:
+  send-books:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Python 설치
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 라이브러리 설치
+        run: pip install requests beautifulsoup4
+
+      - name: 도서 추천 전송
+        env:
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
+        run: python books.py
