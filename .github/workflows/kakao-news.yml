@@ -1,0 +1,26 @@
+name: 카카오 뉴스 알림
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'  # 매일 오전 9시 (한국시간 = UTC+9)
+
+jobs:
+  send-news:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Python 설치
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 라이브러리 설치
+        run: pip install requests
+
+      - name: 뉴스 전송
+        env:
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          KAKAO_REFRESH_TOKEN: ${{ secrets.KAKAO_REFRESH_TOKEN }}
+        run: python main.py
