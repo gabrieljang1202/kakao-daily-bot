@@ -80,7 +80,7 @@ if __name__ == "__main__":
     if not books:
         books = "오늘은 도서 정보를 가져오지 못했어요 😅"
 
-    message = f"📚 {today} 베스트셀러 TOP 5\n\n{books}\n\n오늘도 책 한 페이지 어때요? 📖"
+    message = f"📚 {today} 베스트셀러 TOP 5\n\n{books}\n\n재혁님, 오늘도 책 한 페이지 어때요? 📖"
     print(f"전송할 메시지:\n{message}")
 
     result = send_kakao_message(access_token, message)
